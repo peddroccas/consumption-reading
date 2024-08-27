@@ -16,6 +16,34 @@ export class UploadController {
       const { image, customer_code, measure_datetime, measure_type } =
         uploadBodySchema.parse(request.params)
 
+      switch (measure_type) {
+        case 'WATER':
+        case 'GAS':
+      }
+
+      const alreadyHasReadingForMonth = async () => {
+        switch (measure_type) {
+          case 'WATER':
+            return await prisma.waterBill.findMany({
+              where: {
+                user_id: customer_code,
+                date: measure_datetime,
+              },
+            })
+          case 'GAS':
+            return await prisma.gasBill.findMany({
+              where: {
+                user_id: customer_code,
+                date: measure_datetime,
+              },
+            })
+        }
+      }
+
+      if ((await alreadyHasReadingForMonth()).length) {
+        throw new Error('Já existe uma leitura para este tipo no mês atual')
+      }
+
       const uploadResponse = await googleAIFileManager.uploadFile(image, {
         mimeType: 'image/base64',
       })
