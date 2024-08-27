@@ -6,7 +6,7 @@ import path from 'path'
 import { writeFile, unlink } from 'node:fs/promises'
 
 export class UploadController {
-  static async uploadBill(request: FastifyRequest, reply: FastifyReply) {
+  static async uploadMeasure(request: FastifyRequest, reply: FastifyReply) {
     try {
       const uploadBodySchema = z.object({
         image: z.string().base64(),
@@ -18,27 +18,27 @@ export class UploadController {
       const { image, customer_code, measure_datetime, measure_type } =
         uploadBodySchema.parse(request.body)
 
-      const bills =
+      const measures =
         measure_type === 'WATER'
           ? await prisma.user
               .findFirst({
                 where: {
                   id: customer_code,
                 },
-                select: { waterBills: true },
+                select: { waterMeasures: true },
               })
-              .then((bills) => bills?.waterBills)
+              .then((measures) => measures?.waterMeasures)
           : await prisma.user
               .findFirst({
                 where: {
                   id: customer_code,
                 },
-                select: { gasBills: true },
+                select: { gasMeasures: true },
               })
-              .then((bills) => bills?.gasBills)
+              .then((measures) => measures?.gasMeasures)
 
-      const alreadyHasReadingForMonth = bills?.find((bill) => {
-        return bill.date.getMonth() === measure_datetime.getMonth()
+      const alreadyHasReadingForMonth = measures?.find((measure) => {
+        return measure.date.getMonth() === measure_datetime.getMonth()
       })
 
       if (alreadyHasReadingForMonth) {
@@ -70,20 +70,20 @@ export class UploadController {
           },
         },
         {
-          text: 'Collect the value of clock in the given image, give only the answer, no extras text',
+          text: 'Collect the value of clock in the given image, give only the answer, no extras text, and it must be a integer',
         },
       ])
 
-      const newBill =
+      const newMeasure =
         measure_type === 'WATER'
-          ? await prisma.waterBill.create({
+          ? await prisma.waterMeasure.create({
               data: {
                 value: Number(result.response.text()),
                 date: measure_datetime,
                 user_id: customer_code,
               },
             })
-          : await prisma.gasBill.create({
+          : await prisma.gasMeasure.create({
               data: {
                 value: Number(result.response.text()),
                 date: measure_datetime,
@@ -95,8 +95,8 @@ export class UploadController {
 
       reply.status(200).send({
         image_url: `data:image/jpeg;base64,${image}`,
-        measure_value: newBill.value,
-        measure_uuid: newBill.id,
+        measure_value: newMeasure.value,
+        measure_uuid: newMeasure.id,
       })
     } catch (error) {
       if (error instanceof z.ZodError) {
