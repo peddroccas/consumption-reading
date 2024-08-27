@@ -22,18 +22,22 @@ model User {
 }
 
 model WaterBill {
-  id   String   @id @default(uuid())
-  date DateTime @unique
+  id          String   @id @default(uuid())
+  value       Decimal
+  date        DateTime @unique
+  confirmated Boolean  @default(false)
 
-  user    User   @relation(fields: [user_id], references: [id])
+  user    User?  @relation(fields: [user_id], references: [id])
   user_id String
 
   @@map("waterBills")
 }
 
 model GasBill {
-  id   String   @id @default(uuid())
-  date DateTime
+  id          String   @id @default(uuid())
+  value       Decimal
+  date        DateTime
+  confirmated Boolean  @default(false)
 
   user    User   @relation(fields: [user_id], references: [id])
   user_id String
