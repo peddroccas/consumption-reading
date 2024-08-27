@@ -12,3 +12,31 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id         String      @id @default(uuid())
+  waterBills WaterBill[]
+  gasBills   GasBill[]
+
+  @@map("users")
+}
+
+model WaterBill {
+  id   String   @id @default(uuid())
+  date DateTime
+
+  user    User   @relation(fields: [user_id], references: [id])
+  user_id String
+
+  @@map("waterBills")
+}
+
+model GasBill {
+  id   String   @id @default(uuid())
+  date DateTime
+
+  user    User   @relation(fields: [user_id], references: [id])
+  user_id String
+
+  @@map("gasBills")
+}

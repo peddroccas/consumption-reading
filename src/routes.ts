@@ -1,5 +1,6 @@
 import { FastifyInstance } from 'fastify'
+import { UploadRoutes } from './routes/uploadRouter'
 
 export async function appRoutes(app: FastifyInstance) {
-  app.register(() => console.log('123'))
+  app.register(UploadRoutes)
 }
