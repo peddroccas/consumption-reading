@@ -18,26 +18,16 @@ export class UploadController {
       const { image, customer_code, measure_datetime, measure_type } =
         uploadBodySchema.parse(request.body)
 
-      const measures =
-        measure_type === 'WATER'
-          ? await prisma.user
-              .findFirst({
-                where: {
-                  id: customer_code,
-                },
-                select: { waterMeasures: true },
-              })
-              .then((measures) => measures?.waterMeasures)
-          : await prisma.user
-              .findFirst({
-                where: {
-                  id: customer_code,
-                },
-                select: { gasMeasures: true },
-              })
-              .then((measures) => measures?.gasMeasures)
+      const measuresByUser = await prisma.user
+        .findUnique({
+          where: {
+            id: customer_code,
+          },
+          select: { measures: true },
+        })
+        .then((measureObj) => measureObj?.measures)
 
-      const alreadyHasReadingForMonth = measures?.find((measure) => {
+      const alreadyHasReadingForMonth = measuresByUser?.find((measure) => {
         return measure.date.getMonth() === measure_datetime.getMonth()
       })
 
@@ -70,26 +60,18 @@ export class UploadController {
           },
         },
         {
-          text: 'Collect the value of clock in the given image, give only the answer, no extras text, and it must be a integer',
+          text: 'Collect the value of clock in the given image and multiply by 100, give only the answer, no extras text',
         },
       ])
 
-      const newMeasure =
-        measure_type === 'WATER'
-          ? await prisma.waterMeasure.create({
-              data: {
-                value: Number(result.response.text()),
-                date: measure_datetime,
-                user_id: customer_code,
-              },
-            })
-          : await prisma.gasMeasure.create({
-              data: {
-                value: Number(result.response.text()),
-                date: measure_datetime,
-                user_id: customer_code,
-              },
-            })
+      const newMeasure = await prisma.measure.create({
+        data: {
+          value: Number(result.response.text()),
+          type: measure_type,
+          date: measure_datetime,
+          user_id: customer_code,
+        },
+      })
 
       await unlink(tempFilePath)
 
@@ -107,6 +89,7 @@ export class UploadController {
             'Os dados fornecidos no corpo da requisição são inválidos',
         })
       }
+
       reply.status(500).send(error)
     }
   }

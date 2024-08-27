@@ -14,33 +14,21 @@ datasource db {
 }
 
 model User {
-  id            String         @id @default(uuid())
-  waterMeasures WaterMeasure[]
-  gasMeasures   GasMeasure[]
+  id       String    @id @default(uuid())
+  measures Measure[]
 
   @@map("users")
 }
 
-model WaterMeasure {
-  id          String   @id @default(uuid())
-  value       Int
-  date        DateTime @unique
-  confirmated Boolean  @default(false)
+model Measure {
+  id        String   @id @default(uuid())
+  value     Int
+  date      DateTime @unique
+  type      String
+  confirmed Boolean  @default(false)
 
   user    User?  @relation(fields: [user_id], references: [id])
   user_id String
 
-  @@map("waterMeasures")
-}
-
-model GasMeasure {
-  id          String   @id @default(uuid())
-  value       Int
-  date        DateTime
-  confirmated Boolean  @default(false)
-
-  user    User   @relation(fields: [user_id], references: [id])
-  user_id String
-
-  @@map("gasMeasures")
+  @@map("measures")
 }

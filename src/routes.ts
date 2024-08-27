@@ -1,6 +1,8 @@
 import { FastifyInstance } from 'fastify'
-import { UploadRoutes } from './routes/UploadRouter'
+import { UploadController } from './controllers/UploadController'
+import { ConfirmController } from './controllers/ConfirmController'
 
 export async function appRoutes(app: FastifyInstance) {
-  app.register(UploadRoutes)
+  app.post('/upload', UploadController.uploadMeasure)
+  app.patch('/confirm', ConfirmController.confirmMeasure)
 }
