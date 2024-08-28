@@ -23,6 +23,7 @@ services:
     command: ["npm","run","start"]
     depends_on:
       - consumption-reading-pg
+    restart: "always"
 
 
 volumes:
