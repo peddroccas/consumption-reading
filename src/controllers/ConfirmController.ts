@@ -34,6 +34,8 @@ export class ConfirmController {
           value: confirmed_value,
         },
       })
+
+      reply.status(200).send({ success: true })
     } catch (error) {
       if (error instanceof z.ZodError) {
         reply.status(400).send({
@@ -51,7 +53,7 @@ export class ConfirmController {
         reply.status(409).send(error)
       }
 
-      reply.status(404).send(error)
+      reply.status(500).send(error)
     }
   }
 }

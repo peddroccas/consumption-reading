@@ -16,24 +16,34 @@ export class UserController {
       const { measure_type } = listQuerySchema.parse(request.query)
       const { customer_code } = listParamsSchema.parse(request.params)
 
-      const allMeasuresList = await prisma.measure.findMany({
-        where: {
-          user_id: customer_code,
-        },
-        select: {
-          id: true,
-          date: true,
-          type: true,
-          confirmed: true,
-          url: true,
-        },
-      })
+      const allMeasuresList = await prisma.measure
+        .findMany({
+          where: {
+            user_id: customer_code,
+          },
+          select: {
+            id: true,
+            date: true,
+            type: true,
+            confirmed: true,
+            url: true,
+          },
+        })
+        .then((measureList) => {
+          return measureList.map((measure) => ({
+            measure_uuid: measure.id,
+            measure_datetime: measure.date,
+            measure_type: measure.type,
+            has_confirmed: measure.confirmed,
+            image_url: measure.url,
+          }))
+        })
 
       let measureList = allMeasuresList
 
       if (measure_type) {
         measureList = allMeasuresList.filter(
-          (measure) => measure.type === measure_type,
+          (measure) => measure.measure_type === measure_type,
         )
       }
 
