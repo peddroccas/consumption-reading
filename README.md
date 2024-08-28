@@ -39,4 +39,4 @@ Este serviço back-end foi desenvolvido para automatizar a leitura de medidores 
 ### **Execução**
 * Inicie o ambiente de desenvolvimento:
   ```bash
-  docker-compose up -d
+  docker compose up --build
