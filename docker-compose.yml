@@ -1,10 +1,29 @@
+version: '3.8'
 
 services:
   consumption-reading-pg:
-    image: bitnami/postgresql
+    image: bitnami/postgresql:latest
     ports:
-      - 5433:5432
+      - "5433:5432"
     environment:
       - POSTGRESQL_USERNAME=docker
       - POSTGRESQL_PASSWORD=docker
       - POSTGRESQL_DATABASE=consumptiondb
+    volumes:
+      - postgres_data:/bitnami/postgresql
+
+  app:
+    build: .
+    ports:
+      - "3333:3333"
+    env_file:
+      - .env
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    command: ["npm","run","start"]
+    depends_on:
+      - consumption-reading-pg
+
+
+volumes:
+  postgres_data:

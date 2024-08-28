@@ -4,6 +4,11 @@ import { FastifyRequest, FastifyReply } from 'fastify'
 import { z } from 'zod'
 
 export class UserController {
+  static async addNewUser(request: FastifyRequest, reply: FastifyReply) {
+    const newUser = await prisma.user.create({ data: {} })
+    reply.status(200).send(newUser)
+  }
+
   static async listAllMeasures(request: FastifyRequest, reply: FastifyReply) {
     try {
       const listParamsSchema = z.object({

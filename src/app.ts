@@ -9,7 +9,7 @@ export const googleAIFileManager = new GoogleAIFileManager(env.GEMINI_API_KEY)
 const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY)
 
 export const model = genAI.getGenerativeModel({
-  model: 'gemini-1.5-pro',
+  model: 'gemini-1.5-flash',
 })
 
 app.register(appRoutes)
