@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { ConfirmationDuplicatedError, MeasureNotFoundError } from '@/types'
 import { FastifyRequest, FastifyReply } from 'fastify'
 import { z } from 'zod'
 
@@ -13,16 +14,17 @@ export class ConfirmController {
       const { confirmed_value, measure_uuid } = confirmMeasureBodySchema.parse(
         request.body,
       )
-      const measureExists = await prisma.measure.findUnique({
+      const measure = await prisma.measure.findUnique({
         where: { id: measure_uuid },
+        select: { confirmed: true },
       })
 
-      if (!measureExists) {
-        const error = {
-          error_code: 'MEASURE_NOT_FOUND',
-          error_description: 'Leitura do mês já realizada',
-        }
-        throw error
+      if (!measure) {
+        throw new MeasureNotFoundError()
+      }
+
+      if (measure?.confirmed) {
+        throw new ConfirmationDuplicatedError()
       }
 
       await prisma.measure.update({
@@ -33,6 +35,22 @@ export class ConfirmController {
         },
       })
     } catch (error) {
+      if (error instanceof z.ZodError) {
+        reply.status(400).send({
+          error_code: 'INVALID_DATA',
+          erro_description:
+            'Os dados fornecidos no corpo da requisição são inválidos',
+        })
+      }
+
+      if (error instanceof MeasureNotFoundError) {
+        reply.status(404).send(error)
+      }
+
+      if (error instanceof ConfirmationDuplicatedError) {
+        reply.status(409).send(error)
+      }
+
       reply.status(404).send(error)
     }
   }

@@ -23,9 +23,10 @@ model User {
 model Measure {
   id        String   @id @default(uuid())
   value     Int
-  date      DateTime @unique
+  date      DateTime
   type      String
   confirmed Boolean  @default(false)
+  url       String
 
   user    User?  @relation(fields: [user_id], references: [id])
   user_id String
